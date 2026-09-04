@@ -1,0 +1,1 @@
+# scarborough-bridlington-august-asset-2026
