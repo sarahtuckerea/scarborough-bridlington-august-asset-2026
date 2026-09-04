@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Storm Response — Scarborough & Bridlington, 16–18 Aug 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1A22;
+    --panel:#152229;
+    --panel-2:#101B22;
+    --border:#223441;
+    --text:#EAF0F2;
+    --text-dim:#84A0AC;
+    --text-faint:#4E6772;
+    --rain:#5B9BC7;
+    --playhead:#F5F1E6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;}
+  .wrap{max-width:980px;margin:0 auto;padding:28px 22px 40px;}
+
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;
+    border-bottom:1px solid var(--border);padding-bottom:18px;margin-bottom:20px;flex-wrap:wrap;}
+  h1{font-family:'Fraunces',serif;font-weight:500;font-size:28px;margin:0 0 4px;letter-spacing:-0.01em;}
+  .subtitle{color:var(--text-dim);font-size:13.5px;}
+  .stats{display:flex;gap:22px;text-align:right;}
+  .stat{display:flex;flex-direction:column;gap:2px;}
+  .stat .n{font-family:'IBM Plex Mono',monospace;font-size:18px;color:var(--text);}
+  .stat .l{font-size:11px;color:var(--text-faint);}
+
+  .controls{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--border);
+    border-radius:10px;padding:12px 16px;margin-bottom:22px;}
+  #playBtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--panel-2);
+    color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+    transition:background .15s;}
+  #playBtn:hover{background:#1c2b34;}
+  #scrub{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer;}
+  #scrub::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--playhead);
+    box-shadow:0 0 6px rgba(245,241,230,0.6);cursor:pointer;}
+  #scrub::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--playhead);border:none;cursor:pointer;}
+  .clock{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text);white-space:nowrap;min-width:150px;text-align:right;}
+  .speeds{display:flex;gap:4px;}
+  .speeds button{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:transparent;border:1px solid var(--border);
+    color:var(--text-dim);border-radius:6px;padding:5px 8px;cursor:pointer;}
+  .speeds button.active{color:var(--bg);background:var(--rain);border-color:var(--rain);}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px 10px;margin-bottom:16px;}
+  .panel-label{font-size:11px;letter-spacing:.02em;color:var(--text-faint);margin-bottom:8px;}
+
+  #rainSvg{width:100%;display:block;overflow:visible;}
+  .track-wrap{position:relative;}
+  .playhead-line{position:absolute;top:0;bottom:0;width:1px;background:var(--playhead);
+    box-shadow:0 0 8px rgba(245,241,230,0.5);pointer-events:none;}
+
+  .group-label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;color:var(--text-faint);
+    margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--c);}
+
+  .lane{display:flex;align-items:center;height:26px;position:relative;}
+  .lane-name{width:172px;flex:0 0 auto;font-size:12px;color:var(--text-dim);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;padding-right:10px;}
+  .lane-track{flex:1;position:relative;height:100%;}
+  .lane-track .rule{position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border);}
+  .bar{position:absolute;top:7px;height:12px;border-radius:3px;opacity:0.15;transition:opacity .18s;background:var(--c);}
+  .bar.active{opacity:1;box-shadow:0 0 10px var(--c);}
+
+  .log{height:150px;overflow-y:auto;font-family:'IBM Plex Mono',monospace;font-size:12px;display:flex;
+    flex-direction:column-reverse;gap:5px;padding-right:4px;}
+  .log-entry{color:var(--text-dim);opacity:0;transform:translateY(4px);animation:in .3s forwards;
+    border-left:2px solid var(--c);padding-left:9px;}
+  .log-entry .t{color:var(--text-faint);margin-right:8px;}
+  .log-entry .a{color:var(--c);}
+  @keyframes in{to{opacity:1;transform:translateY(0);}}
+  .log::-webkit-scrollbar{width:6px;} .log::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+  footer{color:var(--text-faint);font-size:11px;margin-top:6px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>Storm response, Scarborough &amp; Bridlington</h1>
+      <div class="subtitle">Asset discharges vs. rainfall accumulation · 16–18 August 2026</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="n" id="statEvents">–</span><span class="l">discharge events</span></div>
+      <div class="stat"><span class="n" id="statAssets">–</span><span class="l">assets involved</span></div>
+      <div class="stat"><span class="n" id="statPeak">–</span><span class="l">peak 15min rainfall</span></div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <button id="playBtn" aria-label="Play">
+      <svg id="iconPlay" width="14" height="14" viewBox="0 0 14 14"><polygon points="2,1 13,7 2,13" fill="#EAF0F2"/></svg>
+      <svg id="iconPause" width="14" height="14" viewBox="0 0 14 14" style="display:none"><rect x="2" y="1" width="4" height="12" fill="#EAF0F2"/><rect x="8" y="1" width="4" height="12" fill="#EAF0F2"/></svg>
+    </button>
+    <input type="range" id="scrub" min="0" max="1000" value="0">
+    <div class="speeds">
+      <button data-speed="0.5">0.5×</button>
+      <button data-speed="1" class="active">1×</button>
+      <button data-speed="2">2×</button>
+      <button data-speed="4">4×</button>
+    </div>
+    <div class="clock" id="clock">–</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">RAINFALL — SCARBOROUGH GAUGE, 15-MIN TOTALS (MM)</div>
+    <div class="track-wrap">
+      <svg id="rainSvg" viewBox="0 0 1000 90" preserveAspectRatio="none"></svg>
+      <div class="playhead-line" id="playheadRain"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">DISCHARGE ACTIVITY BY ASSET</div>
+    <div class="track-wrap" id="lanesWrap">
+      <div class="playhead-line" id="playheadLanes"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">EVENT LOG</div>
+    <div class="log" id="log"></div>
+  </div>
+
+  <footer>Rainfall is the actual 15-minute gauge record from the Scarborough gauge only — no equivalent local gauge was supplied for the Bridlington South Bay window shown here, so Bridlington STW / Springfield Ave CSO activity is plotted against the Scarborough trace as the nearest available reference, not a co-located reading. Playback compresses the real timeline into a scrubbable window; drag the slider or press play.</footer>
+
+</div>
+
+<script>
+const RAIN = [{"t":"2026-08-16T00:00:00","v":0.0},{"t":"2026-08-16T00:15:00","v":0.0},{"t":"2026-08-16T00:30:00","v":0.0},{"t":"2026-08-16T00:45:00","v":0.0},{"t":"2026-08-16T01:00:00","v":0.0},{"t":"2026-08-16T01:15:00","v":0.0},{"t":"2026-08-16T01:30:00","v":0.0},{"t":"2026-08-16T01:45:00","v":0.0},{"t":"2026-08-16T02:00:00","v":0.0},{"t":"2026-08-16T02:15:00","v":0.0},{"t":"2026-08-16T02:30:00","v":0.0},{"t":"2026-08-16T02:45:00","v":0.0},{"t":"2026-08-16T03:00:00","v":0.0},{"t":"2026-08-16T03:15:00","v":0.0},{"t":"2026-08-16T03:30:00","v":0.0},{"t":"2026-08-16T03:45:00","v":0.0},{"t":"2026-08-16T04:00:00","v":0.0},{"t":"2026-08-16T04:15:00","v":0.0},{"t":"2026-08-16T04:30:00","v":0.0},{"t":"2026-08-16T04:45:00","v":0.0},{"t":"2026-08-16T05:00:00","v":0.0},{"t":"2026-08-16T05:15:00","v":0.0},{"t":"2026-08-16T05:30:00","v":0.0},{"t":"2026-08-16T05:45:00","v":0.0},{"t":"2026-08-16T06:00:00","v":0.0},{"t":"2026-08-16T06:15:00","v":0.0},{"t":"2026-08-16T06:30:00","v":0.0},{"t":"2026-08-16T06:45:00","v":0.0},{"t":"2026-08-16T07:00:00","v":0.0},{"t":"2026-08-16T07:15:00","v":0.0},{"t":"2026-08-16T07:30:00","v":0.0},{"t":"2026-08-16T07:45:00","v":0.0},{"t":"2026-08-16T08:00:00","v":0.2},{"t":"2026-08-16T08:15:00","v":0.0},{"t":"2026-08-16T08:30:00","v":0.2},{"t":"2026-08-16T08:45:00","v":0.0},{"t":"2026-08-16T09:00:00","v":0.0},{"t":"2026-08-16T09:15:00","v":0.2},{"t":"2026-08-16T09:30:00","v":0.0},{"t":"2026-08-16T09:45:00","v":0.2},{"t":"2026-08-16T10:00:00","v":0.0},{"t":"2026-08-16T10:15:00","v":0.0},{"t":"2026-08-16T10:30:00","v":0.2},{"t":"2026-08-16T10:45:00","v":0.0},{"t":"2026-08-16T11:00:00","v":0.0},{"t":"2026-08-16T11:15:00","v":0.0},{"t":"2026-08-16T11:30:00","v":0.0},{"t":"2026-08-16T11:45:00","v":0.0},{"t":"2026-08-16T12:00:00","v":0.0},{"t":"2026-08-16T12:15:00","v":0.0},{"t":"2026-08-16T12:30:00","v":0.0},{"t":"2026-08-16T12:45:00","v":0.0},{"t":"2026-08-16T13:00:00","v":0.0},{"t":"2026-08-16T13:15:00","v":0.0},{"t":"2026-08-16T13:30:00","v":0.0},{"t":"2026-08-16T13:45:00","v":0.0},{"t":"2026-08-16T14:00:00","v":0.0},{"t":"2026-08-16T14:15:00","v":0.0},{"t":"2026-08-16T14:30:00","v":0.0},{"t":"2026-08-16T14:45:00","v":0.0},{"t":"2026-08-16T15:00:00","v":0.0},{"t":"2026-08-16T15:15:00","v":0.0},{"t":"2026-08-16T15:30:00","v":0.0},{"t":"2026-08-16T15:45:00","v":0.0},{"t":"2026-08-16T16:00:00","v":0.0},{"t":"2026-08-16T16:15:00","v":0.0},{"t":"2026-08-16T16:30:00","v":0.0},{"t":"2026-08-16T16:45:00","v":0.0},{"t":"2026-08-16T17:00:00","v":0.0},{"t":"2026-08-16T17:15:00","v":0.0},{"t":"2026-08-16T17:30:00","v":0.0},{"t":"2026-08-16T17:45:00","v":0.0},{"t":"2026-08-16T18:00:00","v":0.0},{"t":"2026-08-16T18:15:00","v":0.0},{"t":"2026-08-16T18:30:00","v":0.0},{"t":"2026-08-16T18:45:00","v":0.0},{"t":"2026-08-16T19:00:00","v":0.0},{"t":"2026-08-16T19:15:00","v":0.0},{"t":"2026-08-16T19:30:00","v":0.0},{"t":"2026-08-16T19:45:00","v":0.0},{"t":"2026-08-16T20:00:00","v":0.0},{"t":"2026-08-16T20:15:00","v":0.0},{"t":"2026-08-16T20:30:00","v":0.0},{"t":"2026-08-16T20:45:00","v":0.0},{"t":"2026-08-16T21:00:00","v":0.0},{"t":"2026-08-16T21:15:00","v":0.2},{"t":"2026-08-16T21:30:00","v":1.2},{"t":"2026-08-16T21:45:00","v":1.4},{"t":"2026-08-16T22:00:00","v":0.6},{"t":"2026-08-16T22:15:00","v":0.2},{"t":"2026-08-16T22:30:00","v":0.2},{"t":"2026-08-16T22:45:00","v":0.2},{"t":"2026-08-16T23:00:00","v":0.0},{"t":"2026-08-16T23:15:00","v":0.0},{"t":"2026-08-16T23:30:00","v":0.0},{"t":"2026-08-16T23:45:00","v":0.0},{"t":"2026-08-17T00:00:00","v":0.0},{"t":"2026-08-17T00:15:00","v":0.0},{"t":"2026-08-17T00:30:00","v":0.0},{"t":"2026-08-17T00:45:00","v":0.0},{"t":"2026-08-17T01:00:00","v":0.0},{"t":"2026-08-17T01:15:00","v":0.0},{"t":"2026-08-17T01:30:00","v":0.0},{"t":"2026-08-17T01:45:00","v":0.0},{"t":"2026-08-17T02:00:00","v":0.0},{"t":"2026-08-17T02:15:00","v":0.0},{"t":"2026-08-17T02:30:00","v":0.0},{"t":"2026-08-17T02:45:00","v":0.0},{"t":"2026-08-17T03:00:00","v":0.0},{"t":"2026-08-17T03:15:00","v":0.0},{"t":"2026-08-17T03:30:00","v":0.0},{"t":"2026-08-17T03:45:00","v":0.0},{"t":"2026-08-17T04:00:00","v":0.0},{"t":"2026-08-17T04:15:00","v":0.0},{"t":"2026-08-17T04:30:00","v":0.0},{"t":"2026-08-17T04:45:00","v":0.0},{"t":"2026-08-17T05:00:00","v":0.0},{"t":"2026-08-17T05:15:00","v":0.0},{"t":"2026-08-17T05:30:00","v":0.0},{"t":"2026-08-17T05:45:00","v":0.0},{"t":"2026-08-17T06:00:00","v":0.0},{"t":"2026-08-17T06:15:00","v":0.0},{"t":"2026-08-17T06:30:00","v":0.0},{"t":"2026-08-17T06:45:00","v":0.0},{"t":"2026-08-17T07:00:00","v":0.0},{"t":"2026-08-17T07:15:00","v":0.0},{"t":"2026-08-17T07:30:00","v":0.0},{"t":"2026-08-17T07:45:00","v":0.0},{"t":"2026-08-17T08:00:00","v":0.0},{"t":"2026-08-17T08:15:00","v":0.0},{"t":"2026-08-17T08:30:00","v":0.0},{"t":"2026-08-17T08:45:00","v":0.0},{"t":"2026-08-17T09:00:00","v":0.0},{"t":"2026-08-17T09:15:00","v":0.0},{"t":"2026-08-17T09:30:00","v":0.0},{"t":"2026-08-17T09:45:00","v":0.0},{"t":"2026-08-17T10:00:00","v":0.0},{"t":"2026-08-17T10:15:00","v":0.0},{"t":"2026-08-17T10:30:00","v":0.0},{"t":"2026-08-17T10:45:00","v":0.0},{"t":"2026-08-17T11:00:00","v":0.0},{"t":"2026-08-17T11:15:00","v":0.0},{"t":"2026-08-17T11:30:00","v":0.0},{"t":"2026-08-17T11:45:00","v":0.0},{"t":"2026-08-17T12:00:00","v":0.0},{"t":"2026-08-17T12:15:00","v":0.0},{"t":"2026-08-17T12:30:00","v":0.0},{"t":"2026-08-17T12:45:00","v":0.0},{"t":"2026-08-17T13:00:00","v":0.0},{"t":"2026-08-17T13:15:00","v":0.0},{"t":"2026-08-17T13:30:00","v":0.0},{"t":"2026-08-17T13:45:00","v":0.0},{"t":"2026-08-17T14:00:00","v":0.0},{"t":"2026-08-17T14:15:00","v":0.0},{"t":"2026-08-17T14:30:00","v":0.0},{"t":"2026-08-17T14:45:00","v":0.0},{"t":"2026-08-17T15:00:00","v":0.0},{"t":"2026-08-17T15:15:00","v":0.0},{"t":"2026-08-17T15:30:00","v":0.0},{"t":"2026-08-17T15:45:00","v":0.0},{"t":"2026-08-17T16:00:00","v":0.0},{"t":"2026-08-17T16:15:00","v":0.0},{"t":"2026-08-17T16:30:00","v":0.0},{"t":"2026-08-17T16:45:00","v":0.0},{"t":"2026-08-17T17:00:00","v":0.0},{"t":"2026-08-17T17:15:00","v":0.0},{"t":"2026-08-17T17:30:00","v":0.0},{"t":"2026-08-17T17:45:00","v":0.0},{"t":"2026-08-17T18:00:00","v":0.0},{"t":"2026-08-17T18:15:00","v":0.0},{"t":"2026-08-17T18:30:00","v":0.0},{"t":"2026-08-17T18:45:00","v":0.0},{"t":"2026-08-17T19:00:00","v":0.0},{"t":"2026-08-17T19:15:00","v":0.0},{"t":"2026-08-17T19:30:00","v":0.0},{"t":"2026-08-17T19:45:00","v":0.0},{"t":"2026-08-17T20:00:00","v":0.0},{"t":"2026-08-17T20:15:00","v":0.6},{"t":"2026-08-17T20:30:00","v":0.6},{"t":"2026-08-17T20:45:00","v":1.8},{"t":"2026-08-17T21:00:00","v":1.2},{"t":"2026-08-17T21:15:00","v":0.6},{"t":"2026-08-17T21:30:00","v":0.8},{"t":"2026-08-17T21:45:00","v":0.4},{"t":"2026-08-17T22:00:00","v":0.2},{"t":"2026-08-17T22:15:00","v":0.0},{"t":"2026-08-17T22:30:00","v":0.0},{"t":"2026-08-17T22:45:00","v":0.0},{"t":"2026-08-17T23:00:00","v":0.0},{"t":"2026-08-17T23:15:00","v":0.2},{"t":"2026-08-17T23:30:00","v":0.0},{"t":"2026-08-17T23:45:00","v":0.0},{"t":"2026-08-18T00:00:00","v":0.0},{"t":"2026-08-18T00:15:00","v":0.0},{"t":"2026-08-18T00:30:00","v":0.0},{"t":"2026-08-18T00:45:00","v":0.0},{"t":"2026-08-18T01:00:00","v":0.0},{"t":"2026-08-18T01:15:00","v":0.0},{"t":"2026-08-18T01:30:00","v":0.0},{"t":"2026-08-18T01:45:00","v":0.0},{"t":"2026-08-18T02:00:00","v":0.0},{"t":"2026-08-18T02:15:00","v":0.0},{"t":"2026-08-18T02:30:00","v":0.0},{"t":"2026-08-18T02:45:00","v":0.0},{"t":"2026-08-18T03:00:00","v":0.0},{"t":"2026-08-18T03:15:00","v":0.0},{"t":"2026-08-18T03:30:00","v":0.0},{"t":"2026-08-18T03:45:00","v":0.0},{"t":"2026-08-18T04:00:00","v":0.0}];
+const DATA = [{"bw":"Bridlington South Bay","asset":"Bridlington STW","start":"2026-08-16T23:32:33","stop":"2026-08-16T23:42:15","r1":1,"r3":3.6,"r6":3.6,"r12":3.8,"r24":4,"r48":4,"r72":4},{"bw":"Scarborough North Bay","asset":"Scalby Mills CSO","start":"2026-08-16T22:59:23","stop":"2026-08-16T23:23:37","r1":1.2,"r3":4,"r6":4,"r12":4.8,"r24":5,"r48":5,"r72":5},{"bw":"Bridlington South Bay","asset":"Bridlington STW","start":"2026-08-17T23:52:44","stop":"2026-08-18T00:02:11","r1":0.4,"r3":4,"r6":4,"r12":4.2,"r24":8.2,"r48":8.2,"r72":8.2},{"bw":"Bridlington South Bay","asset":"Bridlington STW","start":"2026-08-17T22:55:30","stop":"2026-08-17T23:45:18","r1":2.4,"r3":4,"r6":4,"r12":4,"r24":8,"r48":8,"r72":8},{"bw":"Bridlington South Bay","asset":"Springfield Ave CSO","start":"2026-08-17T22:51:56","stop":"2026-08-17T23:00:41","r1":2.4,"r3":4,"r6":4,"r12":4,"r24":8,"r48":8,"r72":8},{"bw":"Scarborough North Bay","asset":"Scalby Mills CSO","start":"2026-08-17T22:03:20","stop":"2026-08-17T22:48:40","r1":2,"r3":6.2,"r6":6.2,"r12":6.2,"r24":11.2,"r48":11.2,"r72":11.2},{"bw":"Bridlington South Bay","asset":"Bridlington STW","start":"2026-08-17T00:06:17","stop":"2026-08-17T00:10:34","r1":0.8,"r3":4,"r6":4,"r12":4.2,"r24":4.4,"r48":4.4,"r72":4.4}];
+</script>
+<script>
+(function(){
+  const parse = s => new Date(s);
+  const events = DATA.map(e => ({...e, startD: parse(e.start), stopD: parse(e.stop)}));
+  const rain = RAIN.map(r => ({...r, tD: parse(r.t)})).sort((a,b)=>a.tD-b.tD);
+  const tStart = Math.min(...events.map(e=>e.startD.getTime()), ...rain.map(r=>r.tD.getTime()));
+  const tEnd = Math.max(...events.map(e=>e.stopD.getTime()), ...rain.map(r=>r.tD.getTime()));
+  const totalMs = tEnd - tStart;
+
+  // stats
+  document.getElementById('statEvents').textContent = events.length;
+  document.getElementById('statAssets').textContent = new Set(events.map(e=>e.asset)).size;
+  document.getElementById('statPeak').textContent = Math.max(...rain.map(r=>r.v)).toFixed(1) + ' mm';
+
+  // dynamic bathing-water grouping + palette (order of first appearance)
+  const PALETTE = ['#E2A33E', '#4FBA8F', '#7C8FE8', '#D97E9C', '#4FC0C7'];
+  const bwOrder = [];
+  events.slice().sort((a,b)=>a.startD-b.startD).forEach(e=>{ if(!bwOrder.includes(e.bw)) bwOrder.push(e.bw); });
+  const colorFor = bw => PALETTE[bwOrder.indexOf(bw) % PALETTE.length];
+
+  const lanesWrap = document.getElementById('lanesWrap');
+  bwOrder.forEach(bw=>{
+    const c = colorFor(bw);
+    const gl = document.createElement('div');
+    gl.className = 'group-label';
+    gl.innerHTML = `<span class="dot" style="--c:${c}"></span>${bw.toUpperCase()}`;
+    lanesWrap.appendChild(gl);
+    const assetsInGroup = [];
+    events.filter(e=>e.bw===bw).forEach(e=>{ if(!assetsInGroup.includes(e.asset)) assetsInGroup.push(e.asset); });
+    assetsInGroup.forEach(asset=>{
+      const lane = document.createElement('div');
+      lane.className = 'lane';
+      lane.innerHTML = `<div class="lane-name">${asset}</div><div class="lane-track"><div class="rule"></div></div>`;
+      lanesWrap.appendChild(lane);
+      const track = lane.querySelector('.lane-track');
+      events.filter(e=>e.asset===asset && e.bw===bw).forEach(e=>{
+        const left = (e.startD-tStart)/totalMs*100;
+        let width = (e.stopD-e.startD)/totalMs*100;
+        if(width < 0.6) width = 0.6;
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.setProperty('--c', c);
+        bar.style.left = left + '%';
+        bar.style.width = width + '%';
+        bar.dataset.start = e.startD.getTime();
+        bar.dataset.stop = e.stopD.getTime();
+        track.appendChild(bar);
+      });
+    });
+  });
+  lanesWrap.appendChild(document.getElementById('playheadLanes'));
+
+  // rainfall histogram — 15-min gauge series
+  const maxR = Math.max(...rain.map(p=>p.v), 0.5);
+  const W=1000,H=90,PAD=4;
+  const stepMs = 15*60*1000;
+  function xFor(t){ return (t-tStart)/totalMs * W; }
+  function yFor(v){ return H-PAD - (v/maxR)*(H-PAD*2); }
+  let pathTop = `M${xFor(rain[0].tD.getTime())},${H}`;
+  rain.forEach(p=>{
+    const x0 = xFor(p.tD.getTime());
+    const x1 = xFor(p.tD.getTime()+stepMs);
+    const y = yFor(p.v);
+    pathTop += ` L${x0},${y} L${x1},${y}`;
+  });
+  pathTop += ` L${xFor(rain[rain.length-1].tD.getTime()+stepMs)},${H} Z`;
+  const svg = document.getElementById('rainSvg');
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="rg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#5B9BC7" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#5B9BC7" stop-opacity="0.04"/>
+      </linearGradient>
+    </defs>
+    <path d="${pathTop}" fill="url(#rg)" stroke="#5B9BC7" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+  `;
+
+  // playback
+  const scrub = document.getElementById('scrub');
+  const clock = document.getElementById('clock');
+  const playBtn = document.getElementById('playBtn');
+  const iconPlay = document.getElementById('iconPlay');
+  const iconPause = document.getElementById('iconPause');
+  const log = document.getElementById('log');
+  const playheadRain = document.getElementById('playheadRain');
+  const playheadLanes = document.getElementById('playheadLanes');
+
+  const PLAYBACK_SECONDS = 50;
+  let simMs = 0;
+  let playing = false;
+  let speed = 1;
+  let lastFrame = null;
+  let loggedIds = new Set();
+
+  function fmtClock(ms){
+    const d = new Date(tStart + ms);
+    return d.toLocaleString('en-GB', {weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+  }
+
+  function logLine(ev){
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.style.setProperty('--c', colorFor(ev.bw));
+    entry.innerHTML = `<span class="t">${ev.startD.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span><span class="a">${ev.asset}</span> spill begins — ${ev.r1.toFixed(1)}mm/1hr antecedent`;
+    return entry;
+  }
+
+  function render(){
+    const pct = Math.max(0, Math.min(1, simMs/totalMs));
+    scrub.value = Math.round(pct*1000);
+    playheadRain.style.left = (pct*100)+'%';
+    playheadLanes.style.left = (pct*100)+'%';
+    clock.textContent = fmtClock(simMs);
+
+    const nowT = tStart + simMs;
+    document.querySelectorAll('.bar').forEach(bar=>{
+      const s = +bar.dataset.start, e = +bar.dataset.stop;
+      bar.classList.toggle('active', nowT >= s && nowT <= e + 5*60*1000);
+    });
+
+    events.forEach(ev=>{
+      const key = ev.asset+ev.start;
+      if(ev.startD.getTime() <= nowT && !loggedIds.has(key)){
+        loggedIds.add(key);
+        const entry = logLine(ev);
+        log.appendChild(entry);
+        log.scrollTop = log.scrollHeight;
+      }
+    });
+  }
+
+  function resetLogUpTo(ms){
+    log.innerHTML = '';
+    loggedIds = new Set();
+    const nowT = tStart + ms;
+    events.slice().sort((a,b)=>a.startD-b.startD).forEach(ev=>{
+      const key = ev.asset+ev.start;
+      if(ev.startD.getTime() <= nowT){
+        loggedIds.add(key);
+        const entry = logLine(ev);
+        entry.style.animation = 'none'; entry.style.opacity = 1;
+        log.appendChild(entry);
+      }
+    });
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function tick(ts){
+    if(!playing) return;
+    if(lastFrame===null) lastFrame = ts;
+    const dt = ts - lastFrame;
+    lastFrame = ts;
+    simMs += dt * speed * (totalMs/(PLAYBACK_SECONDS*1000));
+    if(simMs >= totalMs){ simMs = totalMs; playing = false; setPlayingUI(false); }
+    render();
+    if(playing) requestAnimationFrame(tick);
+  }
+
+  function setPlayingUI(p){
+    iconPlay.style.display = p ? 'none' : 'block';
+    iconPause.style.display = p ? 'block' : 'none';
+  }
+
+  playBtn.addEventListener('click', ()=>{
+    playing = !playing;
+    setPlayingUI(playing);
+    if(playing){ lastFrame=null; requestAnimationFrame(tick); }
+  });
+
+  scrub.addEventListener('input', ()=>{
+    playing = false; setPlayingUI(false);
+    simMs = (scrub.value/1000) * totalMs;
+    resetLogUpTo(simMs);
+    render();
+  });
+
+  document.querySelectorAll('.speeds button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      speed = +btn.dataset.speed;
+      document.querySelectorAll('.speeds button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
